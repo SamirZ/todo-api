@@ -8,7 +8,7 @@ if(!process.env.MONGODB_URI){
     const dbName = "/todoapp";
     const testDbName = "/todoapptest";
     
-    if(env === 'development'){
+    if(env === 'dev'){
         process.env.PORT = 3000;
         process.env.MONGODB_URI = protocol + url + port + dbName;
     } else if(env === 'test'){
@@ -16,7 +16,6 @@ if(!process.env.MONGODB_URI){
         process.env.MONGODB_URI = protocol + url + port + testDbName;
     }
 }
-
 
 const _ = require('lodash');
 const express = require('express');
@@ -113,9 +112,24 @@ app.patch('/todos/:id', (req, res) => {
         .catch(e => res.status(400).send(e));
 });
 
-const port = process.env.PORT;
-app.listen(port, () => {
-    console.log(`Server started on port ${port}.`);
+app.post('/users', (req, res) => {
+
+    const body = _.pick(req.body, ['email', 'password']);
+
+    const user = new User(body);
+
+    user.save()
+        .then(() => {
+            return user.generateAuthToken();
+        })
+        .then((token) => {
+            res.header('x-auth', token).status(201).send(user)
+        })
+        .catch(e => res.status(400).send(e));
+});
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server started on port ${process.env.PORT}.`);
 })
 
 module.exports = { app };
