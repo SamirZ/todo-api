@@ -26,6 +26,8 @@ const { mongoose } = require("./db/mongoose");
 
 const { User, Todo } = require("./models");
 
+const { authenticate } = require('./middleware/authenticate');
+
 const app = express();
 
 app.use(bodyParser.json());
@@ -126,6 +128,10 @@ app.post('/users', (req, res) => {
             res.header('x-auth', token).status(201).send(user)
         })
         .catch(e => res.status(400).send(e));
+});
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 });
 
 app.listen(process.env.PORT, () => {
